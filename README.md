@@ -21,6 +21,18 @@ reranking time per query (right).</em></p>
 
 ## Method
 
+<p align="center">
+  <img src="assets/overview.png" width="100%"
+       alt="Overview of RE3Rank: first-stage retriever, generator writing a reasoning trace, scorer reading the attention of a few selected RRHeads, and an example from MuSiQue">
+</p>
+
+<em>Overview of RE³Rank. A first-stage retriever returns candidates for the question from the corpus.
+The generator writes a reasoning trace from the question and the candidates, and the scorer reads
+the same input followed by the reasoning trace. Of all attention heads in the scorer, only a few
+selected RRHeads are used: each candidate is scored by the attention mass that these heads route from
+the reasoning trace positions to it. The ranking loss ℒ<sub>rank</sub> updates both components and
+reaches the generator through a straight-through estimator.</em>
+
 RE³Rank reranks the top-50 candidates of a first-stage retriever (Qwen3-Embedding-8B in all our
 experiments).
 
