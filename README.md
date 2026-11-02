@@ -1,6 +1,6 @@
 # RE³Rank
 
-[![Hugging Face models](https://img.shields.io/badge/Hugging%20Face-RE3RANK%20models-FFD21E?logo=huggingface&logoColor=000)](https://huggingface.co/collections/Ryehr/re3rank-6ae816c96f893091e4e93ca9)
+[![Models on Hugging Face](https://huggingface.co/datasets/huggingface/badges/resolve/main/model-on-hf-md.svg)](https://huggingface.co/collections/Ryehr/re3rank-6ae816c96f893091e4e93ca9)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
 
 Code for **RE³Rank**, a reranker that reads the attention of a few retrieval heads from an LLM's own
