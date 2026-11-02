@@ -6,11 +6,18 @@
 Code for **RE³Rank**, a reranker that reads the attention of a few retrieval heads from an LLM's own
 reasoning trace. <!-- TODO: paper title, authors, venue / arXiv link -->
 
+<p align="center">
+  <img src="assets/teaser_results.png" width="720"
+       alt="NDCG@10 averaged over the nine evaluation sets against model parameters and seconds per query, for RE3Rank and the baseline rerankers">
+</p>
+<p align="center"><em>NDCG@10 averaged over the nine evaluation sets, against model size (left) and
+reranking time per query (right).</em></p>
+
 > **Status.** This repository contains the code; the trained models are on the 🤗 Hugging Face Hub
 > ([RE3RANK collection](https://huggingface.co/collections/Ryehr/re3rank-6ae816c96f893091e4e93ca9),
-> [below](#released-models)). The processed datasets, reasoning traces and experimental results are
-> not released here (results are reported in the paper); every dataset can be rebuilt from its public
-> source with the scripts in `scripts/data/` (see [docs/DATA.md](docs/DATA.md)).
+> [below](#released-models)). The processed datasets and reasoning traces are not released here;
+> every dataset can be rebuilt from its public source with the scripts in `scripts/data/` (see
+> [docs/DATA.md](docs/DATA.md)).
 
 ## Method
 
