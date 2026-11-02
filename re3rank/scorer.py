@@ -10,6 +10,9 @@ The trunk is the backbone truncated below the topmost scoring layer. For each sc
 input layernorm and Q/K path are used (ScoreHead); scoring layers below the top share these modules
 with the trunk. The attention of the selected heads is recomputed explicitly in fp32.
 """
+import json
+import os
+
 import torch
 import torch.nn as nn
 from transformers import AutoModel
@@ -150,9 +153,20 @@ class HeadScorer(nn.Module):
 
 
 def load_scorer(model_id, heads, ckpt=""):
-    """HeadScorer on the backbone, with a trained scorer.pt loaded when given (else untrained)."""
+    """HeadScorer on the backbone, with trained weights loaded when given (else untrained): the
+    scorer.pt of a training run, or the scorer/scorer.safetensors of a released model, whose frozen
+    tables listed in scorer/config.json ("from_base") keep the values loaded from the base model."""
     net = HeadScorer(model_id, parse_heads(heads))
-    if ckpt:
+    if ckpt.endswith(".safetensors"):
+        from safetensors.torch import load_file
+        with open(os.path.join(os.path.dirname(ckpt), "config.json")) as f:
+            cfg = json.load(f)
+        assert parse_heads(cfg["heads"]) == parse_heads(heads), f"{ckpt} was trained with heads {cfg['heads']}"
+        sd = load_file(ckpt)
+        missing, unexpected = net.load_state_dict({k: v.float() for k, v in sd.items()}, strict=False)
+        assert not unexpected and set(missing) <= set(cfg["from_base"]), (missing[:5], unexpected[:5])
+        print(f"loaded {ckpt} ({len(sd)} tensors; from the base model: {', '.join(missing) or 'none'})")
+    elif ckpt:
         sd = torch.load(ckpt, map_location="cpu")
         missing, unexpected = net.load_state_dict({k: v.float() for k, v in sd.items()}, strict=False)
         print(f"loaded {ckpt} (missing {len(missing)}, unexpected {len(unexpected)})")
@@ -203,7 +217,7 @@ def build_instance(item, tokenizer, model_id, trace=None, max_len=32768):
         "chunk_ranges": token_chunk_ranges,
         "q_lo": q_lo,
         "q_hi": q_hi,
-        "gold": torch.tensor([bool(p["is_supporting"]) for p in item["paragraphs"]]),
+        "gold": torch.tensor([bool(p.get("is_supporting")) for p in item["paragraphs"]]),
     }
 
 

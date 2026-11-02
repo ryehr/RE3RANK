@@ -19,7 +19,7 @@ import os
 import torch
 from transformers import AutoTokenizer
 
-from re3rank import paths
+from re3rank import hub, paths
 from re3rank.metrics import KS, query_metrics, summary_line
 from re3rank.scorer import build_instance, load_scorer
 
@@ -29,7 +29,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--model", required=True, help="backbone (scorer trunk and tokenizer), e.g. Qwen/Qwen3-4B")
     ap.add_argument("--heads", required=True, help="scoring heads 'L-H,L-H'")
-    ap.add_argument("--ckpt", default="", help="trained scorer.pt (empty = untrained backbone)")
+    ap.add_argument("--ckpt", default="", help="trained scorer: its weights file, a checkpoint directory, or a "
+                    "released model on the Hugging Face Hub (empty = untrained backbone)")
     ap.add_argument("--traces", default="", help="comma-separated {id: trace} JSON files (empty = question as query)")
     ap.add_argument("--data", required=True, help="candidate file, or the name of an evaluation set")
     ap.add_argument("--gold-denom", type=int, default=0, help=
@@ -47,6 +48,11 @@ def main():
         traces.update(json.load(open(f)))
     print(f"{len(traces)} traces" if traces else "no traces: query rows = the question")
 
+    if args.ckpt and not os.path.isfile(args.ckpt):
+        found = hub.scorer_file(hub.local_checkpoint(args.ckpt))
+        if not found:
+            raise SystemExit(f"no scorer weights in {args.ckpt}")
+        args.ckpt = found
     tokenizer = AutoTokenizer.from_pretrained(args.model)
     net = load_scorer(args.model, args.heads, args.ckpt)
     if args.lowmem:
@@ -87,8 +93,11 @@ def main():
         if (qi + 1) % 200 == 0:
             print(f"[{qi+1}/{len(data)}] R@3(cond)={100*sum(cond[3])/len(cond[3]):.2f}", flush=True)
 
-    print("\n=== conditional (denom = golds in candidates) ===")
-    print(summary_line(cond, nd10) + f"  (n={len(nd10)})")
+    if nd10:
+        print("\n=== conditional (denom = golds in candidates) ===")
+        print(summary_line(cond, nd10) + f"  (n={len(nd10)})")
+    else:
+        print("no item with a gold candidate: metrics skipped")
     if any(absr[3]):
         print("=== absolute ===")
         print("  " + "  ".join(f"R@{k}={100*sum(v)/len(v):.2f}" for k, v in absr.items()))

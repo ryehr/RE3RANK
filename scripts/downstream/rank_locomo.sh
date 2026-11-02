@@ -9,9 +9,10 @@
 #   RE3Rank (a checkpoint evaluated with scripts/eval/run_eval.sh, whose LoCoMo traces are reused):
 #     SYSTEM=re3rank NAME=re3rank-4b CKPT=outputs/ckpt/re3rank-4b/final BASE=Qwen/Qwen3-4B HEADS=23-10,21-8 \
 #       bash scripts/downstream/rank_locomo.sh
+#   (CKPT can also be a released model on the Hugging Face Hub, e.g. CKPT=Ryehr/RE3RANK-Qwen3-4B.)
 #
 # For RE3Rank, TRACES defaults to $RE3RANK_OUT/eval/<run_eval.sh tag>/traces/locomo.json (TAG as in
-# run_eval.sh: <run name>_<checkpoint dir>). External rerankers need no extra step: their nine-set
+# run_eval.sh: <run name>_<checkpoint dir>, or the released model's name). External rerankers need no extra step: their nine-set
 # score file $RE3RANK_OUT/baselines/<tag>/locomo.json already covers every question.
 # Outputs go to $RE3RANK_OUT/downstream/locomo_rank/ (GPU: CUDA_VISIBLE_DEVICES, default 0).
 set -u
@@ -33,13 +34,17 @@ case $SYSTEM in
     ;;
   re3rank)
     NAME=${NAME:?system name, e.g. re3rank-4b}
-    CKPT=${CKPT:?checkpoint dir holding scorer.pt}
+    CKPT=${CKPT:?checkpoint dir holding the scorer, or a released model}
     BASE=${BASE:?backbone, e.g. Qwen/Qwen3-4B}
     HEADS=${HEADS:?scoring heads, e.g. 23-10,21-8}
+    if [ ! -e "$CKPT" ]; then         # a released model on the Hub: use its local snapshot
+      LOCAL=$(python -m re3rank.hub "$CKPT") || exit 1
+      [ "$LOCAL" != "$CKPT" ] && { TAG=${TAG:-$(basename "$CKPT")}; CKPT=$LOCAL; }
+    fi
     TAG=${TAG:-$(basename "$(dirname "$CKPT")")_$(basename "$CKPT")}
     TRACES=${TRACES:-$OUT_ROOT/eval/$TAG/traces/locomo.json}
     [ -s "$TRACES" ] || { echo "no traces at $TRACES: run scripts/eval/run_eval.sh on this checkpoint first (SETS=locomo is enough)"; exit 1; }
-    SC=""; [ -f "$CKPT/scorer.pt" ] && SC="$CKPT/scorer.pt"
+    SC=""; for f in "$CKPT/scorer/scorer.safetensors" "$CKPT/scorer.pt"; do [ -f "$f" ] && { SC=$f; break; }; done
     python scripts/eval/score.py --model "$BASE" ${SC:+--ckpt "$SC"} --heads "$HEADS" --traces "$TRACES" \
       --data locomo --out "$RD/$NAME.json" --lowmem --keep-nogold > "$RD/$NAME.log" 2>&1
     grep -q wrote "$RD/$NAME.log" || { echo "FAILED: $NAME (see $RD/$NAME.log)"; exit 1; }

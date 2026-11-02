@@ -1,12 +1,16 @@
 # RE³Rank
 
+[![Hugging Face models](https://img.shields.io/badge/Hugging%20Face-RE3RANK%20models-FFD21E?logo=huggingface&logoColor=000)](https://huggingface.co/collections/Ryehr/re3rank-6ae816c96f893091e4e93ca9)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
+
 Code for **RE³Rank**, a reranker that reads the attention of a few retrieval heads from an LLM's own
 reasoning trace. <!-- TODO: paper title, authors, venue / arXiv link -->
 
-> **Status.** This repository contains the code only. The processed datasets, reasoning traces,
-> trained checkpoints and experimental results are not released here (results are reported in the
-> paper); every dataset can be rebuilt from its public source with the scripts in `scripts/data/`
-> (see [docs/DATA.md](docs/DATA.md)).
+> **Status.** This repository contains the code; the trained models are on the 🤗 Hugging Face Hub
+> ([RE3RANK collection](https://huggingface.co/collections/Ryehr/re3rank-6ae816c96f893091e4e93ca9),
+> [below](#released-models)). The processed datasets, reasoning traces and experimental results are
+> not released here (results are reported in the paper); every dataset can be rebuilt from its public
+> source with the scripts in `scripts/data/` (see [docs/DATA.md](docs/DATA.md)).
 
 ## Method
 
@@ -145,6 +149,29 @@ table gives each set and the macro average over the nine sets.
 `scripts/eval/score.py` scores a single candidate file. With `--out` it also writes per-query scores;
 these are the input to paired significance tests and to the downstream QA experiment.
 
+## Released models
+
+All five are in the 🤗 Hugging Face collection
+[RE3RANK](https://huggingface.co/collections/Ryehr/re3rank-6ae816c96f893091e4e93ca9).
+
+| model | backbone | heads |
+|---|---|---|
+| [🤗 Ryehr/RE3RANK-Qwen3-0.6B](https://huggingface.co/Ryehr/RE3RANK-Qwen3-0.6B) | `Qwen/Qwen3-0.6B` | 20-4,16-8 |
+| [🤗 Ryehr/RE3RANK-Qwen3-4B](https://huggingface.co/Ryehr/RE3RANK-Qwen3-4B) | `Qwen/Qwen3-4B` | 23-10,21-8 |
+| [🤗 Ryehr/RE3RANK-Qwen3-8B](https://huggingface.co/Ryehr/RE3RANK-Qwen3-8B) | `Qwen/Qwen3-8B` | 15-11,23-10 |
+| [🤗 Ryehr/RE3RANK-Gemma-4-E2B](https://huggingface.co/Ryehr/RE3RANK-Gemma-4-E2B) | `google/gemma-4-E2B-it` | 34-2,9-7 |
+| [🤗 Ryehr/RE3RANK-Gemma-4-E4B](https://huggingface.co/Ryehr/RE3RANK-Gemma-4-E4B) | `google/gemma-4-E4B-it` | 35-0,29-4 |
+
+Each repository holds the generator at its root and the scorer under `scorer/`. The evaluation scripts
+take the repository id in place of a local checkpoint and download it on first use:
+
+```bash
+CKPT=Ryehr/RE3RANK-Qwen3-4B BASE=Qwen/Qwen3-4B HEADS=23-10,21-8 bash scripts/eval/run_eval.sh
+```
+
+`score.py --ckpt` likewise accepts a released repository id or its local copy. The model cards show
+how to rerank your own candidate files.
+
 ## Baselines and downstream QA
 
 [docs/BASELINES.md](docs/BASELINES.md) covers two groups of experiments:
@@ -159,7 +186,9 @@ these are the input to paired significance tests and to the downstream QA experi
   the plugin directory from `LD_LIBRARY_PATH`, and set `NCCL_NET_PLUGIN=none NCCL_TUNER_PLUGIN=none`.
 - **libcuda.** If Triton cannot find `libcuda.so`, set `TRITON_LIBCUDA_PATH` to the driver's library
   directory.
-- **Gemma-4.** `re3rank/backbone.py` also supports Gemma-4 backbones; the paper's results use Qwen3.
+- **Gemma-4.** `re3rank/backbone.py` also supports Gemma-4 backbones (`google/gemma-4-E2B-it`,
+  `-E4B-it`). Only heads of full-attention layers can score: the sliding-window layers do not see
+  distant candidates.
 
 ## Citation
 
