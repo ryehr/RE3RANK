@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "re3rank"
+version = "0.1.0"
+description = "RE3Rank: reasoning-trace retrieval-head reranking"
+readme = "README.md"
+license = { text = "Apache-2.0" }
+requires-python = ">=3.10"
+
+[tool.setuptools]
+packages = ["re3rank"]

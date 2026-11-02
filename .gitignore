@@ -1,0 +1,12 @@
+# data and outputs (see re3rank/paths.py)
+/data/
+/outputs/
+# environments
+.venv*/
+__pycache__/
+*.pyc
+*.egg-info/
+# secrets
+.env
+*API_key*
+*api_key*

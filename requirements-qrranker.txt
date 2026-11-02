@@ -1,0 +1,9 @@
+# Separate environment for the official QRRanker checkpoint (MindscapeRAG/QRRanker): its remote code
+# needs the transformers 4.53 cache API, which cannot be imported next to the main environment's
+# packages. Create it on top of the main environment:
+#   python -m venv --system-site-packages .venv-qrranker
+#   .venv-qrranker/bin/pip install -r requirements-qrranker.txt
+transformers==4.53.0
+huggingface_hub<1.0
+kernels==0.9.0
+tokenizers>=0.21.0,<0.22
