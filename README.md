@@ -1,10 +1,13 @@
 # RE³Rank
 
 [![Hugging Face models](https://img.shields.io/badge/Hugging%20Face-RE3RANK%20models-FFD21E?logo=huggingface&logoColor=FFD21E)](https://huggingface.co/collections/Ryehr/re3rank-6ae816c96f893091e4e93ca9)
+[![arXiv](https://img.shields.io/badge/arXiv-2611.02550-b31b1b.svg)](https://arxiv.org/abs/2611.02550)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
 
 Code for **RE³Rank**, a reranker that reads the attention of a few retrieval heads from an LLM's own
-reasoning trace. <!-- TODO: paper title, authors, venue / arXiv link -->
+reasoning trace.
+
+Paper: [Re³Rank: Listwise Reranking with Reasoning-Conditioned Retrieval Heads](https://arxiv.org/abs/2611.02550)
 
 <p align="center">
   <img src="assets/teaser_results.png" width="720"
@@ -211,7 +214,17 @@ how to rerank your own candidate files.
 
 ## Citation
 
-<!-- TODO: BibTeX -->
+```bibtex
+@misc{yan2026re3ranklistwisererankingreasoningconditioned,
+      title={Re$^3$Rank: Listwise Reranking with Reasoning-Conditioned Retrieval Heads},
+      author={Ruiyi Yan and Zhuoyuan Mao and Yugo Murawaki and Yiwen Guo},
+      year={2026},
+      eprint={2611.02550},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL},
+      url={https://arxiv.org/abs/2611.02550},
+}
+```
 
 ## License
 
